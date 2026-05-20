@@ -1,0 +1,36 @@
+import { html } from '../html.js';
+
+export default function Robot({ isRunning, isSad }) {
+  const cls = 'robot' + (isRunning ? ' running' : '') + (isSad ? ' sad' : '');
+
+  return html`
+    <div className=${cls}>
+      <div className="robot-antenna">
+        <div className="robot-antenna-ball"></div>
+        <div className="robot-antenna-stem"></div>
+      </div>
+      <div className="robot-head">
+        <div className="robot-ear robot-ear-left"></div>
+        <div className="robot-ear robot-ear-right"></div>
+        <div className="robot-eyes">
+          <div className="robot-eye"></div>
+          <div className="robot-eye"></div>
+        </div>
+        <div className="robot-mouth"></div>
+      </div>
+      <div className="robot-neck"></div>
+      <div className="robot-body-wrap">
+        <div className="robot-arm robot-arm-left"></div>
+        <div className="robot-body">
+          <div className="robot-screen">${isSad ? '😢' : isRunning ? '⚙️' : '❤️'}</div>
+          <div className="robot-buttons">
+            <div className="robot-button" style=${{ background: '#ffd600' }}></div>
+            <div className="robot-button" style=${{ background: '#43a047' }}></div>
+            <div className="robot-button" style=${{ background: '#e53935' }}></div>
+          </div>
+        </div>
+        <div className="robot-arm robot-arm-right"></div>
+      </div>
+    </div>
+  `;
+}

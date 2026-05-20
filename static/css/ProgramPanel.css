@@ -1,0 +1,296 @@
+/* ── Program panel ──────────────────────────────────────── */
+.program-panel {
+    grid-area: program;
+    background: #f8f9ff;
+    border-right: 2px solid #dde3ff;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    min-height: 0;
+}
+
+.program-list {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    align-content: start;
+    padding-right: 2px;
+}
+
+.empty-hint {
+    grid-column: 1 / -1;
+    color: #bbb;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.6;
+    margin-top: 24px;
+}
+
+.program-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: white;
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 8px 4px 5px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.program-item:hover {
+    background: #ffebee;
+    border-color: #f44336;
+}
+
+.program-item.active {
+    background: #fff9c4;
+    border-color: #f9a825;
+    transform: scale(1.06);
+}
+
+.program-item.error {
+    background: #ffebee !important;
+    border-color: #e53935 !important;
+    animation: shake 0.45s ease;
+}
+
+.step-num {
+    font-size: 0.65rem;
+    color: #aaa;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.prog-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 6px;
+}
+
+.prog-icon img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+
+/* ── Status bar ─────────────────────────────────────────── */
+.status-bar {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a237e;
+    padding: 6px 0 2px;
+    min-height: 28px;
+}
+
+.status-bar.error {
+    color: #e53935;
+}
+
+/* ── Controls ───────────────────────────────────────────── */
+.program-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.btn {
+    flex: 1;
+    padding: 20px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.2); }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+.btn-play  { background: #607d8b; color: white; }
+.btn-reset { background: #78909c; color: white; }
+.btn-step  { background: #90a4ae; color: white; }
+
+/* ── Save / load section ────────────────────────────────── */
+.save-section {
+    margin-top: 12px;
+    border-top: 2px solid #dde3ff;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.save-input-row {
+    display: flex;
+    gap: 6px;
+}
+
+.save-name-input {
+    flex: 1;
+    padding: 7px 10px;
+    border: 2px solid #c5cae9;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+}
+
+.save-name-input:focus {
+    border-color: #7986cb;
+}
+
+.btn-save {
+    padding: 7px 11px;
+    border: none;
+    border-radius: 10px;
+    background: #5c6bc0;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.btn-save:hover:not(:disabled) { background: #3949ab; transform: translateY(-1px); }
+.btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.saves-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.save-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1.5px solid #e0e4ff;
+    border-radius: 8px;
+    padding: 5px 8px;
+}
+
+.save-item-name {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #3949ab;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-load {
+    padding: 3px 8px;
+    border: none;
+    border-radius: 6px;
+    background: #43a047;
+    color: white;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-load:hover { background: #2e7d32; }
+
+.btn-delete {
+    padding: 3px 7px;
+    border: none;
+    border-radius: 6px;
+    background: #ef5350;
+    color: white;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-delete:hover { background: #c62828; }
+
+/* ── Save toggle button (desktop: hidden; mobile: visible) ── */
+.btn-save-toggle { display: none; }
+
+/* ── Animations ─────────────────────────────────────────── */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-7px); }
+    40%       { transform: translateX(7px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
+}
+
+/* ── Mobile layout ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .program-panel {
+    border-right: none;
+    border-top: 2px solid #dde3ff;
+    padding: 6px 10px;
+    overflow: hidden;
+  }
+
+  .program-list {
+    display: flex;
+    flex-direction: row;
+    grid-template-columns: unset;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    flex: none;
+    height: 60px;
+    align-items: center;
+    gap: 5px;
+    padding-bottom: 2px;
+  }
+  .program-list::-webkit-scrollbar { display: none; }
+
+  .program-item {
+    flex-shrink: 0;
+    width: 54px;
+    height: 54px;
+    padding: 4px 2px 3px;
+    border-radius: 8px;
+  }
+
+  .prog-icon { width: 32px; height: 32px; padding: 4px; border-radius: 6px; }
+  .step-num  { font-size: 0.55rem; }
+
+  .empty-hint { grid-column: unset; width: 180px; flex-shrink: 0; margin-top: 0; font-size: 0.8rem; }
+
+  .program-controls { margin-top: 4px; gap: 5px; }
+  .btn { padding: 10px; font-size: 1.3rem; border-radius: 10px; }
+
+  .btn-save-toggle {
+    display: block;
+    flex-shrink: 0;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: #5c6bc0;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+
+  .save-section        { display: none; margin-top: 6px; }
+  .save-section.open   { display: flex; }
+}
