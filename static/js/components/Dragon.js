@@ -13,8 +13,8 @@ export default function Dragon({ beaten }) {
   }, [beaten]);
 
   const src = beaten
-    ? '/static/img/sprites/dragon_beaten.png'
-    : '/static/img/sprites/dragon_idle_' + IDLE_SEQ[idx] + '.png';
+    ? 'static/img/sprites/dragon_beaten.png'
+    : 'static/img/sprites/dragon_idle_' + IDLE_SEQ[idx] + '.png';
 
   return html`<img src=${src} alt="daemon" className="dragon-sprite" />`;
 }

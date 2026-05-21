@@ -16,7 +16,7 @@ export default function PalettePanel({ onAdd, isDisabled }) {
           </button>
         `)}
       </div>
-      <img src="/static/img/kpop-characters.png" alt="" className="kpop-characters" />
+      <img src="static/img/kpop-characters.png" alt="" className="kpop-characters" />
     </div>
   `;
 }

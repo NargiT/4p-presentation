@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="{{ request.scope.get('root_path', '') }}/">
     <title>Explorateur de code</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="/static/css/PalettePanel.css">
+    <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="static/css/PalettePanel.css">
     <script type="importmap">
     {
         "imports": {
@@ -18,6 +19,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="/static/js/main.js"></script>
+    <script type="module" src="static/js/main.js"></script>
 </body>
 </html>

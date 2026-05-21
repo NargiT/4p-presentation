@@ -3,7 +3,7 @@ import { html } from '../html.js';
 import { INSTRUCTIONS } from '../constants.js';
 
 {
-  const href = '/static/css/ProgramPanel.css';
+  const href = 'static/css/ProgramPanel.css';
   if (!document.head.querySelector(`link[href="${href}"]`)) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';

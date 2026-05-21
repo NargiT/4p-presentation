@@ -397,7 +397,7 @@ export default function App() {
     ${splash ? html`
       <div className=${'splash-screen' + (splashHiding ? ' hiding' : '')} onClick=${dismissSplash}>
         <div className="splash-card">
-          <img src="/static/img/kpop.jpg" alt="K-Pop Demon Hunters" className="splash-img" />
+          <img src="static/img/kpop.jpg" alt="K-Pop Demon Hunters" className="splash-img" />
           <div className="splash-hint">Appuie n'importe où pour commencer !</div>
         </div>
       </div>

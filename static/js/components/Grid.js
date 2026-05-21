@@ -56,8 +56,8 @@ export default function Grid({ character, gridEffect, daemonBeaten, characterDef
           ${isChar
             ? html`
               <div className="char-wrapper">
-                ${singing ? html`<img src="/static/img/sing.svg" alt="chanter" className="sing-bubble" />` : null}
-                <img src=${characterDefeated ? '/static/img/sprites/girl_defeat.png' : '/static/img/sprites/girl_' + character.dir + '.png'} alt="personnage" className="character-sprite" />
+                ${singing ? html`<img src="static/img/sing.svg" alt="chanter" className="sing-bubble" />` : null}
+                <img src=${characterDefeated ? 'static/img/sprites/girl_defeat.png' : 'static/img/sprites/girl_' + character.dir + '.png'} alt="personnage" className="character-sprite" />
               </div>`
             : isObstacle
               ? '🪨'
