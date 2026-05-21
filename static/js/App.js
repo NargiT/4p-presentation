@@ -1,12 +1,18 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { html, Fragment } from './html.js';
 import { GRID_SIZE, START, INSTRUCTIONS, DAEMON, OBSTACLES, CHILD_NAME } from './constants.js';
 import ProgramPanel from './components/ProgramPanel.js';
 import TowerCol from './components/TowerCol.js';
 import Grid from './components/Grid.js';
 import PalettePanel from './components/PalettePanel.js';
+import BroadcastPacket from './components/BroadcastPacket.js';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const BROADCAST_MS  = 600; // antenna broadcast duration per step
+const PRELOAD_MS    = 300; // when to switch robot screen to next instruction
+const POST_MOVE_MS  = 120; // brief pause after character moves
+const POP_MS        = 250; // instruction pops in list before robot/broadcast
 
 const STORAGE_KEY = '4p-saves';
 function readSaves() {
@@ -32,6 +38,9 @@ export default function App() {
   const [splash, setSplash] = useState(() => !localStorage.getItem('4p-splash-seen'));
   const [splashHiding, setSplashHiding] = useState(false);
   const [footsteps, setFootsteps] = useState([]);
+  const [robotInstruction, setRobotInstruction]     = useState(null);
+  const [robotBroadcasting, setRobotBroadcasting]   = useState(false);
+  const [robotBroadcastRev, setRobotBroadcastRev]   = useState(false);
 
   function dismissSplash() {
     localStorage.setItem('4p-splash-seen', '1');
@@ -39,17 +48,19 @@ export default function App() {
     setTimeout(() => setSplash(false), 500);
   }
 
-  const execStateRef   = useRef('idle');
-  const characterRef   = useRef({ ...START });
-  const currentStepRef = useRef(-1);
-  const posHistoryRef  = useRef([]);
-  const autoPlayGenRef = useRef(0);
-  const programRef     = useRef([]);
+  const execStateRef         = useRef('idle');
+  const characterRef         = useRef({ ...START });
+  const currentStepRef       = useRef(-1);
+  const posHistoryRef        = useRef([]);
+  const autoPlayGenRef       = useRef(0);
+  const programRef           = useRef([]);
+  const robotBroadcastingRef = useRef(false);
 
-  function setExecStateSync(s)   { execStateRef.current = s;   setExecState(s); }
-  function setCurrentStepSync(s) { currentStepRef.current = s; setCurrentStep(s); }
-  function setCharacterSync(c)   { characterRef.current = c;   setCharacter(c); }
-  function setProgramSync(p)     { programRef.current = p;     setProgram(p); }
+  function setExecStateSync(s)        { execStateRef.current = s;         setExecState(s); }
+  function setCurrentStepSync(s)      { currentStepRef.current = s;       setCurrentStep(s); }
+  function setCharacterSync(c)        { characterRef.current = c;         setCharacter(c); }
+  function setProgramSync(p)          { programRef.current = p;           setProgram(p); }
+  function setRobotBroadcastingSync(v){ robotBroadcastingRef.current = v; setRobotBroadcasting(v); }
 
   function executeStep(stepIndex) {
     const prog = programRef.current;
@@ -71,13 +82,13 @@ export default function App() {
         setTimeout(() => {
           setSinging(false);
           setDaemonBeaten(true);
-        }, 2000);
+        }, 1000);
         setTimeout(() => {
           setShowTrophy(true);
           setGridEffect('win');
           setTimeout(() => setGridEffect(''), 1500);
           setStatusText('🎉 Démon vaincu ! Le K-pop idol sauve le monde !');
-        }, 4500);
+        }, 1500);
       } else {
         setStatusText(`🎵 Le démon est trop loin ! (Étape ${stepIndex + 1} / ${prog.length})`);
         if (stepIndex === prog.length - 1) {
@@ -139,15 +150,51 @@ export default function App() {
 
   async function runAutoPlay() {
     const gen = ++autoPlayGenRef.current;
+
     while (execStateRef.current === 'playing' && gen === autoPlayGenRef.current) {
-      if (currentStepRef.current >= programRef.current.length - 1) break;
-      await sleep(900);
+      const nextIdx = currentStepRef.current + 1;
+      if (nextIdx >= programRef.current.length) break;
+
+      // ── Phase 0: instruction pops in program list ──
+      setActiveStep(nextIdx);
+      await sleep(POP_MS);
       if (execStateRef.current !== 'playing' || gen !== autoPlayGenRef.current) return;
-      executeStep(currentStepRef.current + 1);
+
+      // ── Phase 1: robot receives instruction, antenna starts broadcasting ──
+      setRobotInstruction(programRef.current[nextIdx]);
+      setRobotBroadcastingSync(true);
+
+      // ── Phase 2: halfway through – robot preloads next instruction ──
+      await sleep(PRELOAD_MS);
+      if (execStateRef.current !== 'playing' || gen !== autoPlayGenRef.current) {
+        setRobotBroadcastingSync(false);
+        return;
+      }
+      const followIdx = nextIdx + 1;
+      if (followIdx < programRef.current.length) {
+        setRobotInstruction(programRef.current[followIdx]);
+      }
+
+      await sleep(BROADCAST_MS - PRELOAD_MS);
+      if (execStateRef.current !== 'playing' || gen !== autoPlayGenRef.current) {
+        setRobotBroadcastingSync(false);
+        return;
+      }
+
+      // ── Phase 3: broadcast done – character moves ──
+      setRobotBroadcastingSync(false);
+      executeStep(nextIdx);
+
+      await sleep(POST_MOVE_MS);
     }
+
+    setRobotBroadcastingSync(false);
   }
 
   async function handlePlayPause() {
+    // Only block when a manual step broadcast is running (paused state).
+    // During auto-play the user must be able to pause at any time.
+    if (execStateRef.current === 'paused' && robotBroadcastingRef.current) return;
     const es = execStateRef.current;
     if (es === 'idle') {
       if (programRef.current.length === 0) return;
@@ -169,30 +216,83 @@ export default function App() {
     }
   }
 
-  function stepBack() {
+  async function stepBack() {
     const es = execStateRef.current;
-    if (es === 'playing' || currentStepRef.current < 0) return;
+    if (es === 'playing' || currentStepRef.current < 0 || robotBroadcastingRef.current) return;
+
+    const undoIdx = currentStepRef.current;
+
+    // Phase 0: instruction pops in list (lock ref immediately)
+    robotBroadcastingRef.current = true;
+    setActiveStep(undoIdx);
+    await sleep(POP_MS);
+
+    // Phase 1: robot screen + reverse broadcast
+    setRobotInstruction(programRef.current[undoIdx]);
+    setRobotBroadcastRev(true);
+    setRobotBroadcasting(true); // rising edge fires BroadcastPacket with correct instruction
+    await sleep(BROADCAST_MS);
+    setRobotBroadcastingSync(false);
+    setRobotBroadcastRev(false);
+
     setActiveStep(-1);
     setErrorStep(-1);
     setStatusError(false);
     setGridEffect('');
-    setFootsteps(prev => prev.slice(0, -1));
-    setCharacterSync({ ...posHistoryRef.current[currentStepRef.current] });
-    const newStep = currentStepRef.current - 1;
+    setShowTrophy(false);
+    setDaemonBeaten(false);
+    setSinging(false);
+    if (programRef.current[undoIdx] !== 'sing') setFootsteps(prev => prev.slice(0, -1));
+    setCharacterSync({ ...posHistoryRef.current[undoIdx] });
+    const newStep = undoIdx - 1;
     setCurrentStepSync(newStep);
     if (es === 'done') setExecStateSync('paused');
     if (newStep >= 0) {
       setStatusText(`Étape ${newStep + 1} / ${programRef.current.length}`);
       setActiveStep(newStep);
+      setRobotInstruction(programRef.current[newStep]);
     } else {
       setStatusText('');
+      setRobotInstruction(null);
     }
   }
 
-  function stepForward() {
-    if (execStateRef.current !== 'paused') return;
+  async function stepForward() {
+    const es = execStateRef.current;
+    if ((es !== 'paused' && es !== 'idle') || robotBroadcastingRef.current) return;
     if (currentStepRef.current >= programRef.current.length - 1) return;
-    executeStep(currentStepRef.current + 1);
+
+    // First-step from idle: initialise exactly like play, but stay paused
+    if (es === 'idle') {
+      if (programRef.current.length === 0) return;
+      setCurrentStepSync(-1);
+      posHistoryRef.current = [];
+      setCharacterSync({ ...START });
+      setActiveStep(-1);
+      setErrorStep(-1);
+      setStatusText('');
+      setStatusError(false);
+      setFootsteps([]);
+      setExecStateSync('paused');
+    }
+
+    const nextIdx = currentStepRef.current + 1;
+
+    // Phase 0: instruction pops in list (lock ref immediately, state update deferred)
+    robotBroadcastingRef.current = true;
+    setActiveStep(nextIdx);
+    await sleep(POP_MS);
+    if (execStateRef.current !== 'paused') { robotBroadcastingRef.current = false; return; }
+
+    // Phase 1: robot screen + broadcast
+    setRobotInstruction(programRef.current[nextIdx]);
+    setRobotBroadcastRev(false);
+    setRobotBroadcasting(true); // rising edge fires BroadcastPacket with correct instruction
+    await sleep(BROADCAST_MS);
+    setRobotBroadcastingSync(false);
+
+    if (execStateRef.current !== 'paused') return;
+    executeStep(nextIdx);
   }
 
   function persistSaves(next) {
@@ -223,6 +323,8 @@ export default function App() {
     setSinging(false);
     setShowTrophy(false);
     setChildName(save.name);
+    setRobotInstruction(null);
+    setRobotBroadcastingSync(false);
   }
 
   function deleteSave(name) {
@@ -276,18 +378,22 @@ export default function App() {
     setSinging(false);
     setShowTrophy(false);
     setFootsteps([]);
+    setRobotInstruction(null);
+    setRobotBroadcastingSync(false);
   }
 
   const isPlaying   = execState === 'playing';
   const isPaused    = execState === 'paused';
   const isIdle      = execState === 'idle';
 
-  const playDisabled  = isIdle && program.length === 0;
-  const prevDisabled  = isPlaying || currentStep < 0;
-  const nextDisabled  = !isPaused || currentStep >= program.length - 1;
-  const resetDisabled = isPlaying;
+  const manualBroadcast = isPaused && robotBroadcasting;
+  const playDisabled  = (isIdle && program.length === 0) || manualBroadcast;
+  const prevDisabled  = isPlaying || currentStep < 0   || manualBroadcast;
+  const nextDisabled  = (!isPaused && !isIdle) || currentStep >= program.length - 1 || manualBroadcast;
+  const resetDisabled = isPlaying || manualBroadcast;
 
   return html`<${Fragment}>
+    <${BroadcastPacket} instruction=${robotInstruction} broadcasting=${robotBroadcasting} reverse=${robotBroadcastRev} />
     ${splash ? html`
       <div className=${'splash-screen' + (splashHiding ? ' hiding' : '')} onClick=${dismissSplash}>
         <div className="splash-card">
@@ -318,7 +424,12 @@ export default function App() {
         onLoad=${loadSave}
         onDelete=${deleteSave}
       />
-      <${TowerCol} isRunning=${isPlaying} isSad=${statusError} />
+      <${TowerCol}
+        isRunning=${isPlaying}
+        isSad=${statusError}
+        instruction=${robotInstruction}
+        broadcasting=${robotBroadcasting}
+      />
       <${Grid}
         character=${character}
         gridEffect=${gridEffect}

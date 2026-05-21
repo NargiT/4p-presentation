@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { html } from '../html.js';
 import Robot from './Robot.js';
 
-const ROBOT_H = 162; // natural robot height in px (antenna+head+neck+body)
-const ROBOT_W = 86;  // natural robot width in px (arms + body)
+const ROBOT_H = 162;
+const ROBOT_W = 86;
 
-export default function TowerCol({ isRunning, isSad }) {
+export default function TowerCol({ isRunning, isSad, instruction, broadcasting }) {
   const colRef  = useRef(null);
   const [scale, setScale] = useState(1);
 
@@ -30,7 +30,12 @@ export default function TowerCol({ isRunning, isSad }) {
   return html`
     <div className="tower-col" ref=${colRef}>
       <div style=${wrapStyle}>
-        <${Robot} isRunning=${isRunning} isSad=${isSad} />
+        <${Robot}
+          isRunning=${isRunning}
+          isSad=${isSad}
+          instruction=${instruction}
+          broadcasting=${broadcasting}
+        />
       </div>
     </div>
   `;

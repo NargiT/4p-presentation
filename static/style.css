@@ -450,6 +450,48 @@ body {
     box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
+/* ── Robot screen instruction icon ─────────────────────── */
+.robot-screen-badge {
+    width: 80%;
+    height: 80%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 6px rgba(255,255,255,0.25);
+}
+
+.robot-screen-instr {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+}
+
+/* ── Broadcasting state ─────────────────────────────────── */
+@keyframes antenna-sonar {
+    0%   { box-shadow: 0 0 6px #00e5ff,
+                       0 0 0 0   rgba(0,229,255,0.9),
+                       0 0 0 0   rgba(0,229,255,0.4); }
+    60%  { box-shadow: 0 0 14px #00e5ff,
+                       0 0 0 10px rgba(0,229,255,0),
+                       0 0 0 22px rgba(0,229,255,0); }
+    100% { box-shadow: 0 0 6px #00e5ff,
+                       0 0 0 0   rgba(0,229,255,0),
+                       0 0 0 0   rgba(0,229,255,0); }
+}
+
+.robot.broadcasting .robot-antenna-ball {
+    background: #00e5ff;
+    animation: antenna-sonar 0.28s ease-out infinite;
+}
+
+/* suppress screen-blink while showing an instruction — keep it fully visible */
+.robot.broadcasting .robot-screen,
+.robot.running .robot-screen {
+    animation: none;
+    opacity: 1;
+}
+
 /* ── Robot states ───────────────────────────────────────── */
 
 /* running: faster float + excited eye blink */

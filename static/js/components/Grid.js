@@ -74,7 +74,7 @@ export default function Grid({ character, gridEffect, daemonBeaten, characterDef
     <div className="main-area">
       <div className="screen-monitor">
         <div className="screen-bezel">
-          <div className="screen-face">
+          <div className="screen-face" data-screen-face="1">
             <div className="grid-coords-wrapper">
               <div className="grid-corner"></div>
               <div className="grid-col-labels grid-col-labels-top">

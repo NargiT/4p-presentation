@@ -16,7 +16,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
     align-content: start;
-    padding-right: 2px;
+    padding: 10px 6px 10px 4px; /* room for scale(1.15) at top/bottom/sides */
 }
 
 .empty-hint {
@@ -40,7 +40,7 @@
     border-radius: 10px;
     padding: 8px 4px 5px;
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .program-item:hover {
@@ -49,9 +49,31 @@
 }
 
 .program-item.active {
-    background: #fff9c4;
-    border-color: #f9a825;
-    transform: scale(1.06);
+    background: #ffd600;
+    border: 3px solid #e65100;
+    transform: scale(1.15);
+    z-index: 2;
+    box-shadow:
+        0 0 0 3px rgba(255, 214, 0, 0.5),
+        0 6px 20px rgba(230, 81, 0, 0.35);
+    animation: active-pulse 0.75s ease-in-out infinite;
+}
+
+.program-item.active .step-num {
+    color: #bf360c;
+}
+
+@keyframes active-pulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 3px  rgba(255, 214, 0, 0.55),
+            0 6px 20px rgba(230, 81, 0, 0.35);
+    }
+    50% {
+        box-shadow:
+            0 0 0 7px  rgba(255, 214, 0, 0.2),
+            0 6px 28px rgba(230, 81, 0, 0.55);
+    }
 }
 
 .program-item.error {
