@@ -1,3 +1,5 @@
+[English](README.md) · [Français](README.fr.md)
+
 # Explorateur de code
 
 A first taste of programming for children around 5 years old — before they can read,
