@@ -1,0 +1,6 @@
+apiVersion: v2
+name: prez-4p
+description: Yeva 4p presentation
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

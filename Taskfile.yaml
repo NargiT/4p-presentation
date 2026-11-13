@@ -1,0 +1,11 @@
+version: '3'
+
+includes:
+  orchestration:
+    taskfile: ./tasks/Taskfile.orchestration.yaml
+    dir: ./deploy/prez-4p
+
+tasks:
+  default:
+    silent: true
+    cmd: task --list
