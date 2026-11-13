@@ -1,0 +1,52 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "app.fullname" . }}-redirect
+  namespace: {{ .Values.namespace }}
+spec:
+  parentRefs:
+    - name: public-gateway
+      namespace: gateway-public
+      sectionName: http
+  hostnames:
+    - "nargit.fr"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.routePrefix }}
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "app.fullname" . }}
+  namespace: {{ .Values.namespace }}
+spec:
+  parentRefs:
+    - name: public-gateway
+      namespace: gateway-public
+      sectionName: https
+  hostnames:
+    - "nargit.fr"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.routePrefix }}
+      {{- if ne .Values.routePrefix "/" }}
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      {{- end }}
+      backendRefs:
+        - name: {{ include "app.fullname" . }}
+          port: {{ .Values.service.port }}
+          namespace: {{ .Values.namespace }}

@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+
+  deploy:
+    desc: Deploy prez-4p
+    cmds:
+      - helm upgrade --install prez-4p . --namespace prez-4p --create-namespace --kube-context admin@verse-infra-cluster
+
+  undeploy:
+    desc: Undeploy prez-4p
+    cmds:
+      - helm uninstall prez-4p --namespace prez-4p --kube-context admin@verse-infra-cluster
